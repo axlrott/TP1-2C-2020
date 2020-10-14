@@ -16,8 +16,6 @@ int send_socket_client(socket_client_t* self, char* envio, int largo);
 
 int recv_socket_client(socket_client_t* self, char* recibidor, int largo);
 
-void shutdown_socket_client(socket_client_t* self);
-
-void close_socket_client(socket_client_t* self);
+void destroy_socket_client(socket_client_t* self);
 
 #endif

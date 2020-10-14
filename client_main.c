@@ -23,15 +23,39 @@ void encriptar_cadena(unsigned char* cadena, char* key, const char* method){
 	}
 }
 
+int enviar_mensaje(socket_client_t* socket, FILE* input, char* cadena, char* cripto, char* key){
+	int continuar = LONG_CHAR;
+	unsigned char* cadena_unsigned = (unsigned char*) cadena;
+
+	while(continuar == LONG_CHAR){
+		continuar = fread(cadena_unsigned, sizeof(char), LONG_CHAR, input);
+
+		if (continuar == -1){
+			return -1;
+		}
+
+		encriptar_cadena(cadena_unsigned, key, cripto);
+		send_socket_client(socket, (char*) cadena_unsigned, LONG_CHAR);
+
+		memset(cadena_unsigned, '\0', LONG_CHAR);
+	}
+	return 0;
+}
+
+void liberar_memoria_input(FILE* input){
+	if (input != stdin){
+		fclose(input);
+	}
+}
+
 int main(int argc, char const *argv[]){
 	FILE* input;
 	socket_client_t socket_cliente;
-	int continuar = LONG_CHAR;
 	char clave[LONG_KEY];
-	char* cadena = calloc(LONG_CHAR, sizeof(char));
+	char cadena[LONG_CHAR];
 
-	strncpy(clave, argv[4]+6, LONG_KEY);
-	unsigned char* cadena_unsigned = (unsigned char*) cadena;
+	strncpy(clave, (argv[4]+6), LONG_KEY);
+	memset(cadena, '\0', LONG_CHAR);
 
 	if(argc > 5){
 		input = fopen(argv[5], "r");
@@ -42,25 +66,16 @@ int main(int argc, char const *argv[]){
 		return -1;
 	}
 
-	create_socket_client(&socket_cliente, argv[1], argv[2]);
-	connect_socket_client(&socket_cliente);
-
-	while( continuar == LONG_CHAR){
-		continuar = fread(cadena_unsigned, sizeof(char), LONG_CHAR, input);
-
-		encriptar_cadena(cadena_unsigned, clave, argv[3]);
-		send_socket_client(&socket_cliente, (char*) cadena_unsigned, LONG_CHAR);
-
-		memset(cadena_unsigned, '\0', LONG_CHAR);
+	if(create_socket_client(&socket_cliente, argv[1], argv[2]) == 0){
+		if(connect_socket_client(&socket_cliente) == 0){
+			if(enviar_mensaje(&socket_cliente, input, cadena, (char*) argv[3], clave) == 0){
+				liberar_memoria_input(input);
+				destroy_socket_client(&socket_cliente);
+				return 0;
+			}
+		}
 	}
 
-	if (input != stdin){
-		fclose(input);
-	}
-
-	shutdown_socket_client(&socket_cliente);
-	close_socket_client(&socket_cliente);
-	free(cadena);
-
-	return 0;
+	liberar_memoria_input(input);
+	return -1;
 }

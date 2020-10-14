@@ -24,41 +24,40 @@ int init_socket_server_address(socket_server_t* self, const char* service){
 }
 
 int create_socket_server(socket_server_t* self, const char* service){
-	int resultado;
 	int val = 1;
+	self->socket_servidor = -1;
 
-	resultado = init_socket_server_address(self, service);
-	if(resultado == -1){
-		return resultado;
+	if( init_socket_server_address(self, service) != 0 ){
+		return -1;
 	}
 
 	struct addrinfo* dir = self->direcciones;
+
 	self->socket_main = socket(dir->ai_family, dir->ai_socktype, dir->ai_protocol);
 	setsockopt(self->socket_main, SOL_SOCKET, SO_REUSEADDR, &val, sizeof(val));
 
 	if (self->socket_main == -1){
-		printf("Error: %s\n", strerror(errno));
+		freeaddrinfo(self->direcciones);
 		return -1;
 	}
+
 	return 0;
 }
 
-int bind_socket_server(socket_server_t* self){
-	int resultado;
+int bind_listen_socket_server(socket_server_t* self, int cantidad){
 	struct addrinfo* dir = self->direcciones;
 
-	resultado = bind(self->socket_main, dir->ai_addr, dir->ai_addrlen);
+	if (bind(self->socket_main, dir->ai_addr, dir->ai_addrlen) != 0){
+		destroy_socket_server(self);
+		return -1;
+	}
 
-	return resultado;
+	if (listen(self->socket_main, cantidad) != 0){
+		destroy_socket_server(self);
+		return -1;
+	}
 
-}
-
-int listen_socket_server(socket_server_t* self, int cantidad){
-	int resultado;
-
-	resultado = listen(self->socket_main, cantidad);
-
-	return resultado;
+	return 0;
 }
 
 int accept_socket_server(socket_server_t* self){
@@ -66,40 +65,23 @@ int accept_socket_server(socket_server_t* self){
 
 	self->socket_servidor = accept(self->socket_main, dir->ai_addr, &(dir->ai_addrlen));
 
-	if (self->socket_servidor < 0){
+	if (self->socket_servidor == -1){
+		destroy_socket_server(self);
 		return -1;
 	}
 	return 0;
 }
 
-int send_socket_server(socket_server_t* self, char* envio, int largo){
-	int cant_send = 0;
-	int tmp;
-
-	while(largo > cant_send){
-		envio += cant_send;
-		tmp = send(self->socket_servidor, envio, (largo - cant_send), MSG_NOSIGNAL);
-		cant_send += tmp;
-
-		if(tmp == -1){
-			return -1;
-		}else if(tmp == 0){
-			return 0;
-		}
-	}
-	return 1;
-}
-
 int recv_socket_server(socket_server_t* self, char* recibidor, int largo){
 	int cant_recv = 0;
-	int tmp;
 
 	while(largo > cant_recv){
 		recibidor += cant_recv;
-		tmp = recv(self->socket_servidor, recibidor, (largo - cant_recv), 0);
+		int tmp = recv(self->socket_servidor, recibidor, (largo - cant_recv), 0);
 		cant_recv += tmp;
 
 		if(tmp == -1){
+			destroy_socket_server(self);
 			return -1;
 		}else if(tmp == 0){
 			return 0;
@@ -108,15 +90,12 @@ int recv_socket_server(socket_server_t* self, char* recibidor, int largo){
 	return 1;
 }
 
-void shutdown_socket_server(socket_server_t* self){
-	shutdown(self->socket_servidor, SHUT_RDWR);
+void destroy_socket_server(socket_server_t* self){
+	if (self->socket_servidor != -1){
+		shutdown(self->socket_servidor, SHUT_RDWR);
+		close(self->socket_servidor);
+	}
 	shutdown(self->socket_main, SHUT_RDWR);
-
-}
-
-void close_socket_server(socket_server_t* self){
 	freeaddrinfo(self->direcciones);
-	close(self->socket_servidor);
 	close(self->socket_main);
-
 }

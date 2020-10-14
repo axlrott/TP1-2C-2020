@@ -78,16 +78,14 @@ void kda_rc4(unsigned char* array_numerico, char* key, int largo_array){
 void prga_rc4(unsigned char* array_numerico, unsigned char* cadena, int largo){
 	int pos_a = 0;
 	int pos_b = 0;
-	unsigned char output;
-	int pos_output;
 
 	for (int k = 0; k < largo; k++){
 		pos_a = (pos_a + 1) & MAX_CHAR;
 		pos_b = (pos_b + array_numerico[pos_a]) & MAX_CHAR;
 		cambiar_posiciones(array_numerico, pos_a, pos_b);
 
-		pos_output = (array_numerico[pos_a] + array_numerico[pos_b]) & MAX_CHAR;
-		output = array_numerico[pos_output];
+		int pos_output = (array_numerico[pos_a] + array_numerico[pos_b]) & MAX_CHAR;
+		unsigned char output = array_numerico[pos_output];
 		cadena[k] = cadena[k] ^ output;
 	}
 }

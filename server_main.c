@@ -9,7 +9,8 @@
 #define VIGENERE "--method=vigenere"
 #define RC4 "--method=rc4"
 #define LONG_CHAR 65
-#define LONG_KEY 10
+#define LONG_KEY 15
+#define CANT_LISTEN 10
 
 
 void desencriptar_cadena(unsigned char* cadena, char* key, const char* method){
@@ -25,32 +26,41 @@ void desencriptar_cadena(unsigned char* cadena, char* key, const char* method){
 	}
 }
 
-int main(int argc, char const *argv[]){
-	socket_server_t socket_servidor;
-	char* cadena_recibida = calloc(LONG_CHAR+1, sizeof(char));
-	char clave[LONG_KEY];
+int imprimir_mensaje(socket_server_t* socket, char* cadena, char* cripto, char* key){
 	int continuar = 1;
 
-	strncpy(clave, argv[3]+6, LONG_KEY);
-
-	create_socket_server(&socket_servidor, argv[1]);
-	bind_socket_server(&socket_servidor);
-	listen_socket_server(&socket_servidor, 10);
-	accept_socket_server(&socket_servidor);
-
 	while(continuar == 1){
-		continuar = recv_socket_server(&socket_servidor, cadena_recibida, LONG_CHAR);
-		unsigned char* cadena_unsigned = (unsigned char*) cadena_recibida;
-		desencriptar_cadena(cadena_unsigned, clave, argv[2]);
-		if (continuar != 0){
+		continuar = recv_socket_server(socket, cadena, LONG_CHAR);
+		unsigned char* cadena_unsigned = (unsigned char*) cadena;
+		desencriptar_cadena(cadena_unsigned, key, cripto);
+		if (continuar > 0){
 			printf("%s", cadena_unsigned);
+		}else if (continuar == -1){
+			return -1;
 		}
-		memset(cadena_recibida, '\0', LONG_CHAR);
+		memset(cadena, '\0', LONG_CHAR);
+	}
+	return 0;
+}
+
+int main(int argc, char const *argv[]){
+	socket_server_t socket_servidor;
+	char cadena_recibida[LONG_CHAR+1];
+	char clave[LONG_KEY];
+
+	strncpy(clave, argv[3]+6, LONG_KEY);
+	memset(cadena_recibida, '\0', LONG_CHAR+1);
+
+	if(create_socket_server(&socket_servidor, argv[1]) == 0){
+		if(bind_listen_socket_server(&socket_servidor, CANT_LISTEN) == 0){
+			if(accept_socket_server(&socket_servidor) == 0){
+				if(imprimir_mensaje(&socket_servidor, cadena_recibida, (char*) argv[2], clave) == 0){
+					destroy_socket_server(&socket_servidor);
+					return 0;
+				}
+			}
+		}
 	}
 
-	shutdown_socket_server(&socket_servidor);
-	close_socket_server(&socket_servidor);
-	free(cadena_recibida);
-
-	return 0;
+	return -1;
 }

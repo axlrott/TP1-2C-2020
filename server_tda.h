@@ -10,9 +10,7 @@ typedef struct socket_server{
 
 int create_socket_server(socket_server_t* self, const char* service);
 
-int bind_socket_server(socket_server_t* self);
-
-int listen_socket_server(socket_server_t* self, int cantidad);
+int bind_listen_socket_server(socket_server_t* self, int cantidad);
 
 int accept_socket_server(socket_server_t* self);
 
@@ -20,8 +18,6 @@ int send_socket_server(socket_server_t* self, char* envio, int largo);
 
 int recv_socket_server(socket_server_t* self, char* recibidor, int largo);
 
-void shutdown_socket_server(socket_server_t* self);
-
-void close_socket_server(socket_server_t* self);
+void destroy_socket_server(socket_server_t* self);
 
 #endif
