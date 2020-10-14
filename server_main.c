@@ -11,6 +11,7 @@
 #define LONG_CHAR 65
 #define LONG_KEY 15
 #define CANT_LISTEN 10
+#define CANT_ARG 4
 
 
 void desencriptar_cadena(unsigned char* cadena, char* key, const char* method){
@@ -33,6 +34,7 @@ int imprimir_mensaje(socket_server_t* socket, char* cadena, char* cripto, char* 
 		continuar = recv_socket_server(socket, cadena, LONG_CHAR);
 		unsigned char* cadena_unsigned = (unsigned char*) cadena;
 		desencriptar_cadena(cadena_unsigned, key, cripto);
+		
 		if (continuar > 0){
 			printf("%s", cadena_unsigned);
 		}else if (continuar == -1){
@@ -47,6 +49,10 @@ int main(int argc, char const *argv[]){
 	socket_server_t socket_servidor;
 	char cadena_recibida[LONG_CHAR+1];
 	char clave[LONG_KEY];
+
+	if(argc != CANT_ARG){
+		return -1;
+	}
 
 	strncpy(clave, argv[3]+6, LONG_KEY);
 	memset(cadena_recibida, '\0', LONG_CHAR+1);

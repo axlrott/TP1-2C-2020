@@ -10,6 +10,7 @@
 #define RC4 "--method=rc4"
 #define LONG_CHAR 65
 #define LONG_KEY 15
+#define CANT_ARG 6
 
 void encriptar_cadena(unsigned char* cadena, char* key, const char* method){
 	if(strcmp(method, CESAR) == 0){
@@ -53,29 +54,31 @@ int main(int argc, char const *argv[]){
 	socket_client_t socket_cliente;
 	char clave[LONG_KEY];
 	char cadena[LONG_CHAR];
+	int salida_main = -1;
+
+	if(argc == CANT_ARG){
+		input = fopen(argv[5], "r");
+	}else if (argc == CANT_ARG-1){
+		input = stdin;
+	}else{
+		return salida_main;
+	}
+	if(!input){
+		return salida_main;
+	}
 
 	strncpy(clave, (argv[4]+6), LONG_KEY);
 	memset(cadena, '\0', LONG_CHAR);
 
-	if(argc > 5){
-		input = fopen(argv[5], "r");
-	}else{
-		input = stdin;
-	}
-	if(!input){
-		return -1;
-	}
-
 	if(create_socket_client(&socket_cliente, argv[1], argv[2]) == 0){
 		if(connect_socket_client(&socket_cliente) == 0){
 			if(enviar_mensaje(&socket_cliente, input, cadena, (char*) argv[3], clave) == 0){
-				liberar_memoria_input(input);
 				destroy_socket_client(&socket_cliente);
-				return 0;
+				salida_main = 0;
 			}
 		}
 	}
 
 	liberar_memoria_input(input);
-	return -1;
+	return salida_main;
 }
