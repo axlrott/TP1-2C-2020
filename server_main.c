@@ -13,41 +13,43 @@
 #define CANT_LISTEN 10
 #define CANT_ARG 4
 
+int imprimirMsj(socket_server_t* skt, char* cadena, char* cripto, char* key){
+	cesar_t enc_cesar;
+	vigenere_t enc_vig;
+	rc4_t enc_rc4;
 
-void desencriptar_cadena(unsigned char* cadena, char* key, const char* method){
+	cesarCreate(&enc_cesar, key);
+	vigenereCreate(&enc_vig, key);
+	rc4Create(&enc_rc4, key);
 
-	if(strcmp(method, CESAR) == 0){
-		desencripto_cesar(cadena, key, LONG_CHAR);
-
-	}else if(strcmp(method, VIGENERE) == 0){
-		desencripto_vigenere(cadena, key, LONG_CHAR);
-
-	}else if(strcmp(method, RC4) == 0){
-		encripto_rc4(cadena, key, LONG_CHAR);
-	}
-}
-
-int imprimir_mensaje(socket_server_t* socket, char* cadena, char* cripto, char* key){
-	int continuar = 1;
-
+	int continuar = socketServerRecv(skt, cadena, LONG_CHAR);
 	while(continuar == 1){
-		continuar = recv_socket_server(socket, cadena, LONG_CHAR);
-		unsigned char* cadena_unsigned = (unsigned char*) cadena;
-		desencriptar_cadena(cadena_unsigned, key, cripto);
-		
-		if (continuar > 0){
-			printf("%s", cadena_unsigned);
-		}else if (continuar == -1){
+		if (continuar == -1){
 			return -1;
 		}
+		unsigned char* cadena_unsigned = (unsigned char*) cadena;
+
+		if(strcmp(cripto, CESAR) == 0){
+			cesarDesencriptar(&enc_cesar, cadena_unsigned, LONG_CHAR);
+		}else if (strcmp(cripto, VIGENERE) == 0){
+			vigenereDesencriptar(&enc_vig, cadena_unsigned, LONG_CHAR);
+		}else if (strcmp(cripto, RC4) == 0){
+			rc4Encriptar(&enc_rc4, cadena_unsigned, LONG_CHAR);
+		}
+
+		printf("%s", cadena_unsigned);
 		memset(cadena, '\0', LONG_CHAR);
+		continuar = socketServerRecv(skt, cadena, LONG_CHAR);
 	}
+	cesarDestroy(&enc_cesar);
+	vigenereDestroy(&enc_vig);
+	rc4Destroy(&enc_rc4);
 	return 0;
 }
 
 int main(int argc, char const *argv[]){
-	socket_server_t socket_servidor;
-	char cadena_recibida[LONG_CHAR+1];
+	socket_server_t socket_serv;
+	char cadena_recv[LONG_CHAR+1];
 	char clave[LONG_KEY];
 
 	if(argc != CANT_ARG){
@@ -55,13 +57,13 @@ int main(int argc, char const *argv[]){
 	}
 
 	strncpy(clave, argv[3]+6, LONG_KEY);
-	memset(cadena_recibida, '\0', LONG_CHAR+1);
+	memset(cadena_recv, '\0', LONG_CHAR+1);
 
-	if(create_socket_server(&socket_servidor, argv[1]) == 0){
-		if(bind_listen_socket_server(&socket_servidor, CANT_LISTEN) == 0){
-			if(accept_socket_server(&socket_servidor) == 0){
-				if(imprimir_mensaje(&socket_servidor, cadena_recibida, (char*) argv[2], clave) == 0){
-					destroy_socket_server(&socket_servidor);
+	if(socketServerCreate(&socket_serv, (char*) argv[1]) == 0){
+		if(socketServerBindListen(&socket_serv, CANT_LISTEN) == 0){
+			if(socketServerAccept(&socket_serv) == 0){
+				if(imprimirMsj(&socket_serv, cadena_recv, (char*) argv[2], clave) == 0){
+					socketServerDestroy(&socket_serv);
 					return 0;
 				}
 			}

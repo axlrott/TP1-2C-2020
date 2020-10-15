@@ -9,22 +9,22 @@
 #include <netdb.h>
 #include <errno.h>
 
-int init_socket_client_address(socket_client_t* self, const char* host, const char* service){
+int initAddress(socket_client_t* self, char* host, char* service){
 	int resultado;
-	struct addrinfo direccion_host;
+	struct addrinfo dir_host;
 
-	memset(&direccion_host, 0, sizeof(struct addrinfo));
-	direccion_host.ai_family = AF_INET;
-	direccion_host.ai_socktype = SOCK_STREAM;
-	direccion_host.ai_flags = 0;
+	memset(&dir_host, 0, sizeof(struct addrinfo));
+	dir_host.ai_family = AF_INET;
+	dir_host.ai_socktype = SOCK_STREAM;
+	dir_host.ai_flags = 0;
 
-	resultado = getaddrinfo(host, service, &direccion_host, &(self->direcciones));
+	resultado = getaddrinfo(host, service, &dir_host, &(self->direcciones));
 
 	return resultado;
 }
 
-int create_socket_client(socket_client_t* self, const char* host, const char* service){
-	if ( init_socket_client_address(self, host, service) == -1 ){
+int SockClientCreate(socket_client_t* self, char* host, char* service){
+	if ( initAddress(self, host, service) == -1 ){
 		freeaddrinfo(self->direcciones);
 		return -1;
 	}
@@ -40,18 +40,18 @@ int create_socket_client(socket_client_t* self, const char* host, const char* se
 	return 0;
 }
 
-int connect_socket_client(socket_client_t* self){
+int SockClientConnect(socket_client_t* self){
 	struct addrinfo* dir = self->direcciones;
 
 	if ( connect(self->socket_main, dir->ai_addr, dir->ai_addrlen) != 0 ){
-		destroy_socket_client(self);
+		SockClientDestroy(self);
 		return -1;
 	}
 	
 	return 0;
 }
 
-int send_socket_client(socket_client_t* self, char* envio, int largo){
+int SockClientSend(socket_client_t* self, char* envio, int largo){
 	int cant_send = 0;
 
 	while(largo > cant_send){
@@ -60,16 +60,16 @@ int send_socket_client(socket_client_t* self, char* envio, int largo){
 		cant_send += tmp;
 
 		if(tmp == -1){
-			destroy_socket_client(self);
+			SockClientDestroy(self);
 			return -1;
-		}else if(tmp == 0){
+		}else if (tmp == 0){
 			return 0;
 		}
 	}
 	return 1;
 }
 
-void destroy_socket_client(socket_client_t* self){
+void SockClientDestroy(socket_client_t* self){
 	freeaddrinfo(self->direcciones);
 	shutdown(self->socket_main, SHUT_RDWR);
 	close(self->socket_main);

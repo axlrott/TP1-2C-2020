@@ -12,38 +12,37 @@
 #define LONG_KEY 15
 #define CANT_ARG 6
 
-void encriptar_cadena(unsigned char* cadena, char* key, const char* method){
-	if(strcmp(method, CESAR) == 0){
-		encripto_cesar(cadena, key, LONG_CHAR);
+int sendMsj(socket_client_t* skt, FILE* inp, char* env, char* crip, char* key){
+	unsigned char* cadena_unsigned = (unsigned char*) env;
+	cesar_t enc_cesar;
+	vigenere_t enc_vig;
+	rc4_t enc_rc4;
 
-	}else if(strcmp(method, VIGENERE) == 0){
-		encripto_vigenere(cadena, key, LONG_CHAR);
+	cesarCreate(&enc_cesar, key);
+	vigenereCreate(&enc_vig, key);
+	rc4Create(&enc_rc4, key);
 
-	}else if(strcmp(method, RC4) == 0){
-		encripto_rc4(cadena, key, LONG_CHAR);
-	}
-}
-
-int enviar_mensaje(socket_client_t* socket, FILE* input, char* cadena, char* cripto, char* key){
-	int continuar = LONG_CHAR;
-	unsigned char* cadena_unsigned = (unsigned char*) cadena;
-
-	while(continuar == LONG_CHAR){
-		continuar = fread(cadena_unsigned, sizeof(char), LONG_CHAR, input);
-
-		if (continuar == -1){
+	while(fread(cadena_unsigned, sizeof(char), LONG_CHAR, inp)){
+		if (ferror(inp)){
 			return -1;
 		}
-
-		encriptar_cadena(cadena_unsigned, key, cripto);
-		send_socket_client(socket, (char*) cadena_unsigned, LONG_CHAR);
-
+		if(strcmp(crip, CESAR) == 0){
+			cesarEncriptar(&enc_cesar, cadena_unsigned, LONG_CHAR);
+		}else if (strcmp(crip, VIGENERE) == 0){
+			vigenereEncriptar(&enc_vig, cadena_unsigned, LONG_CHAR);
+		}else if (strcmp(crip, RC4) == 0){
+			rc4Encriptar(&enc_rc4, cadena_unsigned, LONG_CHAR);
+		}
+		SockClientSend(skt, (char*) cadena_unsigned, LONG_CHAR);
 		memset(cadena_unsigned, '\0', LONG_CHAR);
 	}
+	cesarCreate(&enc_cesar, key);
+	vigenereCreate(&enc_vig, key);
+	rc4Create(&enc_rc4, key);
 	return 0;
 }
 
-void liberar_memoria_input(FILE* input){
+void liberarMemoriaInput(FILE* input){
 	if (input != stdin){
 		fclose(input);
 	}
@@ -70,15 +69,14 @@ int main(int argc, char const *argv[]){
 	strncpy(clave, (argv[4]+6), LONG_KEY);
 	memset(cadena, '\0', LONG_CHAR);
 
-	if(create_socket_client(&socket_cliente, argv[1], argv[2]) == 0){
-		if(connect_socket_client(&socket_cliente) == 0){
-			if(enviar_mensaje(&socket_cliente, input, cadena, (char*) argv[3], clave) == 0){
-				destroy_socket_client(&socket_cliente);
+	if(SockClientCreate(&socket_cliente, (char*) argv[1], (char*) argv[2]) == 0){
+		if(SockClientConnect(&socket_cliente) == 0){
+			if(sendMsj(&socket_cliente, input, cadena, (char*) argv[3], clave) == 0){
+				SockClientDestroy(&socket_cliente);
 				salida_main = 0;
 			}
 		}
 	}
-
-	liberar_memoria_input(input);
+	liberarMemoriaInput(input);
 	return salida_main;
 }

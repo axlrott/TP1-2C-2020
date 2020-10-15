@@ -9,7 +9,7 @@
 #include <netdb.h>
 #include <errno.h>
 
-int init_socket_server_address(socket_server_t* self, const char* service){
+int initAddress(socket_server_t* self, char* service){
 	int resultado;
 	struct addrinfo direccion_host;
 
@@ -23,16 +23,15 @@ int init_socket_server_address(socket_server_t* self, const char* service){
 	return resultado;
 }
 
-int create_socket_server(socket_server_t* self, const char* service){
+int socketServerCreate(socket_server_t* self, char* service){
 	int val = 1;
 	self->socket_servidor = -1;
 
-	if( init_socket_server_address(self, service) != 0 ){
+	if( initAddress(self, service) != 0 ){
 		return -1;
 	}
 
 	struct addrinfo* dir = self->direcciones;
-
 	self->socket_main = socket(dir->ai_family, dir->ai_socktype, dir->ai_protocol);
 	setsockopt(self->socket_main, SOL_SOCKET, SO_REUSEADDR, &val, sizeof(val));
 
@@ -40,39 +39,39 @@ int create_socket_server(socket_server_t* self, const char* service){
 		freeaddrinfo(self->direcciones);
 		return -1;
 	}
-
 	return 0;
 }
 
-int bind_listen_socket_server(socket_server_t* self, int cantidad){
+int socketServerBindListen(socket_server_t* self, int cantidad){
 	struct addrinfo* dir = self->direcciones;
 
 	if (bind(self->socket_main, dir->ai_addr, dir->ai_addrlen) != 0){
-		destroy_socket_server(self);
+		socketServerDestroy(self);
 		return -1;
 	}
 
 	if (listen(self->socket_main, cantidad) != 0){
-		destroy_socket_server(self);
+		socketServerDestroy(self);
 		return -1;
 	}
 
 	return 0;
 }
 
-int accept_socket_server(socket_server_t* self){
+int socketServerAccept(socket_server_t* self){
 	struct addrinfo* dir = self->direcciones;
+	int skt_main = self->socket_main;
 
-	self->socket_servidor = accept(self->socket_main, dir->ai_addr, &(dir->ai_addrlen));
+	self->socket_servidor = accept(skt_main, dir->ai_addr, &(dir->ai_addrlen));
 
 	if (self->socket_servidor == -1){
-		destroy_socket_server(self);
+		socketServerDestroy(self);
 		return -1;
 	}
 	return 0;
 }
 
-int recv_socket_server(socket_server_t* self, char* recibidor, int largo){
+int socketServerRecv(socket_server_t* self, char* recibidor, int largo){
 	int cant_recv = 0;
 
 	while(largo > cant_recv){
@@ -81,16 +80,16 @@ int recv_socket_server(socket_server_t* self, char* recibidor, int largo){
 		cant_recv += tmp;
 
 		if(tmp == -1){
-			destroy_socket_server(self);
+			socketServerDestroy(self);
 			return -1;
-		}else if(tmp == 0){
+		}else if (tmp == 0){
 			return 0;
 		}
 	}
 	return 1;
 }
 
-void destroy_socket_server(socket_server_t* self){
+void socketServerDestroy(socket_server_t* self){
 	if (self->socket_servidor != -1){
 		shutdown(self->socket_servidor, SHUT_RDWR);
 		close(self->socket_servidor);
