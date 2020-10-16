@@ -41,6 +41,21 @@ El recv va a recibir de un socket cliente y guardar lo que reciba en la cadena d
 
 ### Cliente Main:
 
+El cliente main recibe el host, puerto, metodo de encriptacion, clave y la cadena que se va a enviar por entrada estandar.
+Se va a corroborar que la cantidad de parametros sea correcta, luego se guardara la clave pasada, y se procedera a crear el socket cliente con el host y puerto pasados, en caso de que surga algun error se procedera a liberar la memoria y a retornar un -1.
+En caso de que no haya ningun error se creara un buffer que almacenara lo ingresado por entrada estandar en chunks de 64 bytes, luego dependiendo del metodo de encriptacion pasado y la clave se procedera a encriptar la cadena.
+Cuando la cadena ya este encriptada se enviara por el socket cliente la cantidad leida por entrada estandar, en caso de que ya se haya leido toda la entrada estandar se pasara a liberar la memoria del socket y luego la de la entrada estandar y se retornara un 0.
+
 ### Servidor Main:
 
+El servidor main va a recibir el puerto, el metodo de encriptacion y la clave.
+El mismo corroborara que se hayan pasado la cantidad de argumentos validos, va a guardar la clave y luego va a proceder a crear el socket servidor, en caso de algun error se liberara la memoria y se devolvera un -1.
+Si no hay ningun error se procedera a crear un buffer de 64 bytes para recibir lo ingresado por un socket cliente, se recibiran de a 64 bytes, luego de recibirlos se procedera a desencriptar esa cadena de caracteres y se las imprimira por salida estandar y se repetira el proceso hasta que el socket cliente se haya cerrado.
+Luego de este proceso se liberara memoria y se devolvera un 0.
+
+### Diagramas:
+
+![Diagrama1](imgs/Diagrama1.png)
+
+![Diagrama2](imgs/Diagrama2.png)
 
