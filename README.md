@@ -29,7 +29,15 @@ La encriptacion RC4 recibe una clave que representa una palabra y al inicializar
 
 ### Socket Cliente:
 
+El socket Cliente se va a crear pasandole por parametro el host y el puerto a utilizar.
+Todas las funciones del socket cliente van a devolver 0 en caso de exito y devolveran -1 en caso de falla, tambien en caso de que haya alguna falla el socket hara un Destroy internamente y se cerrara.
+La funcion send recibira una cadena de caracteres y un largo, y se enviara ese largo de la cadena de caracteres, en caso de que al enviarse se mandace menos del largo se volvera a mandar lo que resta de la cadena hasta cumplir con que se haya enviado el largo pasado por parametro.
+
 ### Socket Servidor:
+
+El socket servidor se creara pasandole un puerto a utilizar.
+Todas las funciones a excepcion del recv devolveran 0 en caso exitoso o -1 en caso de que haya alguna falla y al igual que en el socket cliente si se detecta una falla el socket hara un Destroy internamente y se cerrara.
+El recv va a recibir de un socket cliente y guardar lo que reciba en la cadena de caracteres pasada por paramentro hasta que se alcanze el largo especificado que se pase por parametro o hasta que el socket cliente se haya cerrado.
 
 ### Cliente Main:
 
