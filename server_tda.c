@@ -27,7 +27,7 @@ int socketServerCreate(socket_server_t* self, char* service){
 	int val = 1;
 	self->socket_servidor = -1;
 
-	if( initAddress(self, service) != 0 ){
+	if(initAddress(self, service) != 0){
 		return -1;
 	}
 
@@ -71,22 +71,22 @@ int socketServerAccept(socket_server_t* self){
 	return 0;
 }
 
-int socketServerRecv(socket_server_t* self, char* recibidor, int largo){
+int socketServerRecv(socket_server_t* self, char* cadena, int largo){
 	int cant_recv = 0;
 
 	while(largo > cant_recv){
-		recibidor += cant_recv;
-		int tmp = recv(self->socket_servidor, recibidor, (largo - cant_recv), 0);
+		int larg_rec = largo - cant_recv;
+		int tmp = recv(self->socket_servidor, (cadena + cant_recv), larg_rec, 0);
 		cant_recv += tmp;
 
 		if(tmp == -1){
 			socketServerDestroy(self);
 			return -1;
 		}else if (tmp == 0){
-			return 0;
+			return cant_recv;
 		}
 	}
-	return 1;
+	return cant_recv;
 }
 
 void socketServerDestroy(socket_server_t* self){

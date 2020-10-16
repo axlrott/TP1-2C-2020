@@ -24,7 +24,7 @@ int initAddress(socket_client_t* self, char* host, char* service){
 }
 
 int SockClientCreate(socket_client_t* self, char* host, char* service){
-	if ( initAddress(self, host, service) == -1 ){
+	if (initAddress(self, host, service) == -1){
 		freeaddrinfo(self->direcciones);
 		return -1;
 	}
@@ -52,12 +52,12 @@ int SockClientConnect(socket_client_t* self){
 }
 
 int SockClientSend(socket_client_t* self, char* envio, int largo){
-	int cant_send = 0;
+	int enviado = 0;
 
-	while(largo > cant_send){
-		envio += cant_send;
-		int tmp = send(self->socket_main, envio, (largo - cant_send), MSG_NOSIGNAL);
-		cant_send += tmp;
+	while(largo > enviado){
+		int tam = largo - enviado;
+		int tmp = send(self->socket_main, (envio + enviado), tam, MSG_NOSIGNAL);
+		enviado += tmp;
 
 		if(tmp == -1){
 			SockClientDestroy(self);

@@ -36,7 +36,6 @@ void cesarDesencriptar(cesar_t* self, unsigned char* cadena, int largo){
 }
 
 void cesarDestroy(cesar_t* self){
-
 }
 
 void vigenereCreate(vigenere_t* self, char* key){
@@ -67,7 +66,6 @@ void vigenereDesencriptar(vigenere_t* self, unsigned char* cadena, int largo){
 }
 
 void vigenereDestroy(vigenere_t* self){
-
 }
 
 void kdaRC4(rc4_t* self, int largo_array){
@@ -100,14 +98,13 @@ void rc4Create(rc4_t* self, char* key){
 	self->key = key;
 	self->posA = 0;
 	self->posB = 0;
+	int largo_array = 256;
+	kdaRC4(self, largo_array);
 }
 
 void rc4Encriptar(rc4_t* self, unsigned char* cadena, int largo){
-	int largo_array = 256;
-	kdaRC4(self, largo_array);
 	prgaRC4(self, cadena, largo);
 }
 
 void rc4Destroy(rc4_t* self){
-
 }
