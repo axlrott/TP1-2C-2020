@@ -29,7 +29,7 @@ int sendMsj(socket_client_t* skt, FILE* input, char* crip, char* key){
 			return -1;
 		}
 
-		if(largo < LONG_CHAR){
+		if(cadena[largo-1] == '\n'){
 			largo--;
 		}
 		if(strcmp(crip, CESAR) == 0){
@@ -65,7 +65,7 @@ int main(int argc, char const *argv[]){
 
 	if(argc == CANT_ARG){
 		input = fopen(argv[5], "r");
-	}else if (argc < CANT_ARG-2){
+	}else if (argc < CANT_ARG-1){
 		liberarMemoriaInput(input);
 		return salida_main;
 	}
