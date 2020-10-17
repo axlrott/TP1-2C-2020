@@ -59,3 +59,9 @@ Luego de este proceso se liberara memoria y se devolvera un 0.
 
 ![Diagrama2](imgs/Diagrama2.png)
 
+####Respondiendo a lo planteado en el informe:
+
+>¿Debería el TDA Socket saber sobre algún cifrador? ¿Debería, por el contrario, saber algún cifrador sobre TCP? ¿Y quién lee de entrada estándar?
+
+El TDA Socket, ya sea cliente o servidor no deberia saber sobre ningun cifrador, solo deberia actuar como enlace entre socket, de la misma forma los cifradores no deberian saber sobre TCP solo deberian servir para encriptar y desencriptar cadenas de caracteres. En el caso de mi TP quien lee de entrada estandar es el client_main.
+
