@@ -3,7 +3,9 @@
 #include <stdbool.h>
 #include <string.h>
 #include "server_tda.h"
-#include "common_encriptaciones.h"
+#include "common_cesar.h"
+#include "common_vigenere.h"
+#include "common_rc4.h"
 
 #define CESAR "--method=cesar"
 #define VIGENERE "--method=vigenere"

@@ -3,7 +3,9 @@
 #include <stdbool.h>
 #include <string.h>
 #include "client_tda.h"
-#include "common_encriptaciones.h"
+#include "common_cesar.h"
+#include "common_vigenere.h"
+#include "common_rc4.h"
 
 #define CESAR "--method=cesar"
 #define VIGENERE "--method=vigenere"
@@ -29,9 +31,6 @@ int sendMsj(socket_client_t* skt, FILE* input, char* crip, char* key){
 			return -1;
 		}
 
-		if(cadena[largo-1] == '\n'){
-			largo--;
-		}
 		if(strcmp(crip, CESAR) == 0){
 			cesarEncriptar(&enc_cesar, cadena, LONG_CHAR);
 		}else if (strcmp(crip, VIGENERE) == 0){

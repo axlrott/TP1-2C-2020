@@ -43,7 +43,7 @@ int SockClientCreate(socket_client_t* self, char* host, char* service){
 int SockClientConnect(socket_client_t* self){
 	struct addrinfo* dir = self->direcciones;
 
-	if ( connect(self->socket_main, dir->ai_addr, dir->ai_addrlen) != 0 ){
+	if (connect(self->socket_main, dir->ai_addr, dir->ai_addrlen) != 0){
 		SockClientDestroy(self);
 		return -1;
 	}
