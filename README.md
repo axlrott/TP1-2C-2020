@@ -59,7 +59,7 @@ Luego de este proceso se liberara memoria y se devolvera un 0.
 
 ![Diagrama2](imgs/Diagrama2.png)
 
-####Respondiendo a lo planteado en el informe:
+#### Respondiendo a lo planteado en el informe:
 
 >¿Debería el TDA Socket saber sobre algún cifrador? ¿Debería, por el contrario, saber algún cifrador sobre TCP? ¿Y quién lee de entrada estándar?
 
