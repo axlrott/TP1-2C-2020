@@ -11,8 +11,7 @@
 #define VIGENERE "--method=vigenere"
 #define RC4 "--method=rc4"
 #define LONG_CHAR 64
-#define LONG_KEY 15
-#define CANT_ARG 6
+#define CANT_ARG 5
 
 int sendMsj(socket_client_t* skt, FILE* input, char* crip, char* key){
 	unsigned char cadena[LONG_CHAR];
@@ -30,7 +29,6 @@ int sendMsj(socket_client_t* skt, FILE* input, char* crip, char* key){
 		if (ferror(input)){
 			return -1;
 		}
-
 		if(strcmp(crip, CESAR) == 0){
 			cesarEncriptar(&enc_cesar, cadena, LONG_CHAR);
 		}else if (strcmp(crip, VIGENERE) == 0){
@@ -48,9 +46,6 @@ int sendMsj(socket_client_t* skt, FILE* input, char* crip, char* key){
 }
 
 void liberarMemoriaInput(FILE* input){
-	if (input != stdin){
-		fclose(input);
-	}
 	fclose(stdin);
 	fclose(stdout);
 	fclose(stderr); 
@@ -59,16 +54,13 @@ void liberarMemoriaInput(FILE* input){
 int main(int argc, char const *argv[]){
 	FILE* input = stdin;
 	socket_client_t socket_cliente;
-	char clave[LONG_KEY];
 	int salida_main = -1;
 
-	if(argc == CANT_ARG){
-		input = fopen(argv[5], "r");
-	}else if (argc < CANT_ARG-1){
+	if(argc != CANT_ARG){
 		liberarMemoriaInput(input);
 		return salida_main;
 	}
-	strncpy(clave, (argv[4]+6), LONG_KEY);
+	char* clave = (char*) argv[4]+6;
 
 	if(SockClientCreate(&socket_cliente, (char*) argv[1], (char*) argv[2]) == 0){
 		if(SockClientConnect(&socket_cliente) == 0){

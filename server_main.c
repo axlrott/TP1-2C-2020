@@ -11,7 +11,6 @@
 #define VIGENERE "--method=vigenere"
 #define RC4 "--method=rc4"
 #define LONG_CHAR 64
-#define LONG_KEY 15
 #define CANT_LISTEN 10
 #define CANT_ARG 4
 
@@ -29,7 +28,7 @@ int recvMsj(socket_server_t* skt, char* cripto, char* key){
 
 	while(largo_rec > 0){
 		largo_rec = socketServerRecv(skt, cadena, LONG_CHAR);
-		if(largo_rec < 0){
+		if(largo_rec <= 0){
 			break;
 		}
 		unsigned char* cadena_unsigned = (unsigned char*) cadena;
@@ -58,15 +57,13 @@ void liberarMemoriaInput(){
 
 int main(int argc, char const *argv[]){
 	socket_server_t socket_serv;
-	char clave[LONG_KEY];
 	int salida_main = -1;
 
 	if(argc != CANT_ARG){
 		liberarMemoriaInput();
 		return salida_main;
 	}
-
-	strncpy(clave, argv[3]+6, LONG_KEY);
+	char* clave = (char*) argv[3]+6;
 
 	if(socketServerCreate(&socket_serv, (char*) argv[1]) == 0){
 		if(socketServerBindListen(&socket_serv, CANT_LISTEN) == 0){
