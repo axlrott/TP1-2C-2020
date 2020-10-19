@@ -6,11 +6,11 @@
 
 ### Introduccion:
 
-En este trabajo practico se realizaron dos programas, uno en el cual se encripta un mensaje enviado por entrada estandar y se lo envia por un socket cliente y otro programa en el cual se lo recibira mediante un socket servidor, se desencriptara el mensaje y luego se lo mostrara por pantalla.
+En este trabajo practico se realizaron dos programas, uno en el cual se recibe un mensaje por entrada estandar, se lo encripta y luego se lo envia por un socket cliente y otro programa en el cual se lo recibira mediante un socket servidor, se desencripta el mensaje y luego se lo muestra por pantalla.
 
 ### Encriptaciones:
 
-Las encriptaciones utilizadas en los programas seran Cesar, Vigenere y RC4.
+Las encriptaciones utilizadas en los programas van a ser Cesar, Vigenere y RC4.
 Cada una de estas encriptaciones van a ser estructuras, las cuales van a recibir sus respectivas claves y encriptaran/desencriptaran en base a eso.
 
 #### Cesar:
@@ -21,7 +21,7 @@ Al encriptar se recibira una cadena de caracteres y el largo de la misma y a cad
 #### Vigenere:
 
 La encriptacion de Vigenere recibe una clave que va a representar una palabra y se inicializa la posicion de la clave en 0.
-Al encriptar se recibe una cadena de caracteres y el largo, se encripta sumando cada caracter con el respectivo caracter de la clave, cuando la clave llega a la posicion final se vuelve a cero y se continua sumando. Al desencriptar es lo mismo solo que restando caracter con caracter de la clave.
+Al encriptar se recibe una cadena de caracteres y el largo, se encripta sumando cada caracter con el respectivo caracter de la clave, cuando la clave llega a la posicion final se vuelve al primer caracter de la clave y se continua sumando. Al desencriptar es lo mismo solo que restando caracter con caracter de la clave.
 
 #### RC4:
 
@@ -30,18 +30,18 @@ La encriptacion RC4 recibe una clave que representa una palabra y al inicializar
 ### Socket Cliente:
 
 El socket Cliente se va a crear pasandole por parametro el host y el puerto a utilizar.
-Todas las funciones del socket cliente van a devolver 0 en caso de exito y devolveran -1 en caso de falla, tambien en caso de que haya alguna falla el socket hara un Destroy internamente y se cerrara.
-La funcion send recibira una cadena de caracteres y un largo, y se enviara ese largo de la cadena de caracteres, en caso de que al enviarse se mandace menos del largo se volvera a mandar lo que resta de la cadena hasta cumplir con que se haya enviado el largo pasado por parametro.
+Todas las funciones del socket cliente van a devolver 0 en caso de exito y devolveran -1 en caso de falla, tambien en caso de que haya alguna falla el socket se llamara a la funcion **Destroy** internamente y se cerrara.
+La funcion **send** recibira una cadena de caracteres y un largo, y se enviara ese largo de la cadena de caracteres, en caso de que al enviarse se mandace menos del largo se volvera a mandar lo que resta de la cadena hasta cumplir con que se haya enviado el largo pasado por parametro.
 
 ### Socket Servidor:
 
-El socket servidor se creara pasandole un puerto a utilizar.
-Todas las funciones a excepcion del recv devolveran 0 en caso exitoso o -1 en caso de que haya alguna falla y al igual que en el socket cliente si se detecta una falla el socket hara un Destroy internamente y se cerrara.
-El recv va a recibir de un socket cliente y guardar lo que reciba en la cadena de caracteres pasada por paramentro hasta que se alcanze el largo especificado que se pase por parametro o hasta que el socket cliente se haya cerrado.
+El socket servidor se creara pasandole el puerto a utilizar como parametro.
+Todas las funciones a excepcion del **recv** devolveran 0 en caso exitoso o -1 en caso de que haya alguna falla y al igual que en el socket cliente si se detecta una falla el socket se llamara a la funcion **Destroy** internamente y se cerrara el socket.
+La funcion **recv** va a recibir de un socket cliente y guardar lo que reciba en la cadena de caracteres pasada por paramentro hasta que se alcanze el largo especificado que se pase por parametro o hasta que el socket cliente se haya cerrado.
 
 ### Cliente Main:
 
-El cliente main recibe el host, puerto, metodo de encriptacion, clave y la cadena que se va a enviar por entrada estandar.
+El cliente main recibe el host, puerto, metodo de encriptacion y clave, tambien por entrada estandar recibira el mensaje a encriptar y enviar al servidor.
 Se va a corroborar que la cantidad de parametros sea correcta, luego se guardara la clave pasada, y se procedera a crear el socket cliente con el host y puerto pasados, en caso de que surga algun error se procedera a liberar la memoria y a retornar un -1.
 En caso de que no haya ningun error se creara un buffer que almacenara lo ingresado por entrada estandar en chunks de 64 bytes, luego dependiendo del metodo de encriptacion pasado y la clave se procedera a encriptar la cadena.
 Cuando la cadena ya este encriptada se enviara por el socket cliente la cantidad leida por entrada estandar, en caso de que ya se haya leido toda la entrada estandar se pasara a liberar la memoria del socket y luego la de la entrada estandar y se retornara un 0.
@@ -63,5 +63,4 @@ Luego de este proceso se liberara memoria y se devolvera un 0.
 
 >¿Debería el TDA Socket saber sobre algún cifrador? ¿Debería, por el contrario, saber algún cifrador sobre TCP? ¿Y quién lee de entrada estándar?
 
-El TDA Socket, ya sea cliente o servidor no deberia saber sobre ningun cifrador, solo deberia actuar como enlace entre socket, de la misma forma los cifradores no deberian saber sobre TCP solo deberian servir para encriptar y desencriptar cadenas de caracteres. En el caso de mi TP quien lee de entrada estandar es el client_main.
-
+El TDA Socket, ya sea cliente o servidor no deberia saber sobre ningun cifrador, solo deberian actuar como enlaces entre sockets, asi de la misma forma los cifradores no deberian saber sobre TCP solo deberian tener como funcion encriptar y desencriptar cadenas de caracteres que se le pasen basadas en el key o clave con el que se hayan creado. En el caso de mi TP quien lee de entrada estandar es el client_main.
