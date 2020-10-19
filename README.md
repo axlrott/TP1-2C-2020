@@ -27,13 +27,17 @@ Al encriptar se recibe una cadena de caracteres y el largo, se encripta sumando 
 
 La encriptacion RC4 recibe una clave que representa una palabra y al inicializarse ya crea un array haciendo KDA. Al encriptar utiliza PRGA para tomar una clave de ese array creado y hacer un XOR con cada caracter de la cadena a encriptar. El desencriptar una cadena es hacer lo mismo que encriptarla.
 
-### Socket Cliente:
+### Sockets
+
+Para el TP voy a utilizar dos TDAs de sockets, va a haber un socket que sirva como cliente y otro como servidor, ambos van a tener como funcion enviar y recibir cadenas de caracteres y el socket servidor solo va a mantener una conexion activa.
+
+#### Socket Cliente:
 
 El socket Cliente se va a crear pasandole por parametro el host y el puerto a utilizar.
 Todas las funciones del socket cliente van a devolver 0 en caso de exito y devolveran -1 en caso de falla, tambien en caso de que haya alguna falla el socket se llamara a la funcion **Destroy** internamente y se cerrara.
 La funcion **send** recibira una cadena de caracteres y un largo, y se enviara ese largo de la cadena de caracteres, en caso de que al enviarse se mandace menos del largo se volvera a mandar lo que resta de la cadena hasta cumplir con que se haya enviado el largo pasado por parametro.
 
-### Socket Servidor:
+#### Socket Servidor:
 
 El socket servidor se creara pasandole el puerto a utilizar como parametro.
 Todas las funciones a excepcion del **recv** devolveran 0 en caso exitoso o -1 en caso de que haya alguna falla y al igual que en el socket cliente si se detecta una falla el socket se llamara a la funcion **Destroy** internamente y se cerrara el socket.
