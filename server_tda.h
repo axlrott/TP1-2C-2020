@@ -1,9 +1,11 @@
 #ifndef SOCKET_SERVER_T
 #define SOCKET_SERVER_T
 
-typedef struct socket_server{
-	int socket_main;
-	int socket_servidor;
+#include "common_socket.h"
+
+typedef struct server{
+	socket_t socket_main;
+	socket_t socket_servidor;
 	struct addrinfo* direcciones;
 }socket_server_t;
 

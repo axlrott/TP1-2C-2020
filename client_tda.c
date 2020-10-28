@@ -23,54 +23,56 @@ int initAddress(socket_client_t* self, char* host, char* service){
 	return resultado;
 }
 
-int SockClientCreate(socket_client_t* self, char* host, char* service){
+int socketClientCreate(socket_client_t* self, char* host, char* service){
 	if (initAddress(self, host, service) == -1){
 		freeaddrinfo(self->direcciones);
 		return -1;
 	}
+	return 0;
+}
 
-	struct addrinfo* dir = self->direcciones;
-	self->socket_main = socket(dir->ai_family, dir->ai_socktype, dir->ai_protocol);
+int socketClientConnect(socket_client_t* self){
+	bool exito = false;
+	struct addrinfo* ptr = self->direcciones;
 
-	if (self->socket_main == -1){
+	while(ptr != NULL && !exito){
+		int dominio = ptr->ai_family;
+		int tipo = ptr->ai_socktype;
+		int protocolo = ptr->ai_protocol;
+
+		int create = socketCreate(&(self->socket_main), dominio, tipo, protocolo);
+		if (create != -1){
+			void* dir = ptr->ai_addr;
+			int dir_long = ptr->ai_addrlen;
+			int conecto = socketConnect(&(self->socket_main), dir, dir_long);
+			if(conecto == -1){
+				socketClose(&(self->socket_main));
+				ptr = ptr->ai_next;
+			}
+			exito = (conecto != -1);
+		}else{
+			ptr = ptr->ai_next;
+		}
+	}
+	if(!exito){
 		freeaddrinfo(self->direcciones);
 		return -1;
 	}
-
+	self->direcciones = ptr;
 	return 0;
 }
 
-int SockClientConnect(socket_client_t* self){
-	struct addrinfo* dir = self->direcciones;
-
-	if (connect(self->socket_main, dir->ai_addr, dir->ai_addrlen) != 0){
-		SockClientDestroy(self);
+int socketClientSend(socket_client_t* self, char* envio, int largo){
+	int res = socketSend(&(self->socket_main), envio, largo);
+	if(res == -1){
+		socketClientDestroy(self);
 		return -1;
 	}
-	
-	return 0;
+	return res;
 }
 
-int SockClientSend(socket_client_t* self, char* envio, int largo){
-	int enviado = 0;
-
-	while(largo > enviado){
-		int tam = largo - enviado;
-		int tmp = send(self->socket_main, (envio + enviado), tam, MSG_NOSIGNAL);
-		enviado += tmp;
-
-		if(tmp == -1){
-			SockClientDestroy(self);
-			return -1;
-		}else if (tmp == 0){
-			return 0;
-		}
-	}
-	return 1;
-}
-
-void SockClientDestroy(socket_client_t* self){
+void socketClientDestroy(socket_client_t* self){
+	socketShutdown(&(self->socket_main), SHUT_RDWR);
+	socketClose(&(self->socket_main));
 	freeaddrinfo(self->direcciones);
-	shutdown(self->socket_main, SHUT_RDWR);
-	close(self->socket_main);
 }

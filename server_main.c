@@ -1,53 +1,19 @@
+#define _POSIX_C_SOURCE 200112L
+
+#include "server_cripto.h"
+#include "server_tda.h"
+#include "common_socket.h"
+#include "common_cesar.h"
+#include "common_vigenere.h"
+#include "common_rc4.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
 #include <string.h>
-#include "server_tda.h"
-#include "common_cesar.h"
-#include "common_vigenere.h"
-#include "common_rc4.h"
 
-#define CESAR "--method=cesar"
-#define VIGENERE "--method=vigenere"
-#define RC4 "--method=rc4"
 #define LONG_CHAR 64
 #define CANT_LISTEN 10
 #define CANT_ARG 4
-
-int recvMsj(socket_server_t* skt, char* cripto, char* key){
-	int largo_rec = 1;
-	char cadena[LONG_CHAR+1];
-	cesar_t enc_cesar;
-	vigenere_t enc_vig;
-	rc4_t enc_rc4;
-
-	memset(cadena, '\0', LONG_CHAR+1);
-	cesarCreate(&enc_cesar, key);
-	vigenereCreate(&enc_vig, key);
-	rc4Create(&enc_rc4, key);
-
-	while(largo_rec > 0){
-		largo_rec = socketServerRecv(skt, cadena, LONG_CHAR);
-		if(largo_rec <= 0){
-			break;
-		}
-		unsigned char* cadena_unsigned = (unsigned char*) cadena;
-		if(strcmp(cripto, CESAR) == 0){
-			cesarDesencriptar(&enc_cesar, cadena_unsigned, largo_rec);
-		}else if (strcmp(cripto, VIGENERE) == 0){
-			vigenereDesencriptar(&enc_vig, cadena_unsigned, largo_rec);
-		}else if (strcmp(cripto, RC4) == 0){
-			rc4Encriptar(&enc_rc4, cadena_unsigned, largo_rec);
-		}
-		printf("%s", cadena_unsigned);
-		memset(cadena, '\0', LONG_CHAR);
-	}
-	cesarDestroy(&enc_cesar);
-	vigenereDestroy(&enc_vig);
-	rc4Destroy(&enc_rc4);
-
-	return largo_rec;
-}
 
 void liberarMemoriaInput(){
 	fclose(stdin);
@@ -56,25 +22,29 @@ void liberarMemoriaInput(){
 }
 
 int main(int argc, char const *argv[]){
-	socket_server_t socket_serv;
-	int salida_main = -1;
+	svCript_t recibidor;
+	int res = -1;
+	char cadena_recv[LONG_CHAR+1];
+	memset(cadena_recv, '\0', LONG_CHAR+1);
 
 	if(argc != CANT_ARG){
 		liberarMemoriaInput();
-		return salida_main;
+		return res;
 	}
+	char* port = (char*) argv[1];
+	char* cripto = (char*) argv[2];
 	char* clave = (char*) argv[3]+6;
 
-	if(socketServerCreate(&socket_serv, (char*) argv[1]) == 0){
-		if(socketServerBindListen(&socket_serv, CANT_LISTEN) == 0){
-			if(socketServerAccept(&socket_serv) == 0){
-				if(recvMsj(&socket_serv, (char*) argv[2], clave) == 0){
-					socketServerDestroy(&socket_serv);
-					salida_main = 0;
-				}
-			}
-		}
+	criptSvCreate(&recibidor, cripto, clave);
+	res = criptSvSocketInit(&recibidor, port, CANT_LISTEN);
+	if (res == -1){
+		return res;
 	}
+	res = criptSvRecvMsj(&recibidor, cadena_recv, LONG_CHAR);
+	if (res == -1){
+		return res;
+	}
+	criptSvDestroy(&recibidor);
 	liberarMemoriaInput();
-	return salida_main;
+	return 0;
 }
