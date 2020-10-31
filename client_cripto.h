@@ -4,6 +4,7 @@
 #include "common_socket.h"
 #include "client_tda.h"
 #include <stdio.h>
+#include <stdbool.h>
 
 typedef struct client_cripto{
 	socket_client_t cliente;
@@ -13,9 +14,9 @@ typedef struct client_cripto{
 
 void criptClCreate(clCript_t* self, char* cripto, char* clave);
 
-int criptClSocketInit(clCript_t* self, char* host, char* port);
+bool criptClSocketInit(clCript_t* self, char* host, char* port);
 
-int criptClEnviarMsj(clCript_t* self, FILE* input, int cant);
+bool criptClEnviarMsj(clCript_t* self, FILE* input, int cant);
 
 void criptClDestroy(clCript_t* self);
 

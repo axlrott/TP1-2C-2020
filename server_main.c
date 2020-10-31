@@ -36,15 +36,12 @@ int main(int argc, char const *argv[]){
 	char* clave = (char*) argv[3]+6;
 
 	criptSvCreate(&recibidor, cripto, clave);
-	res = criptSvSocketInit(&recibidor, port, CANT_LISTEN);
-	if (res == -1){
-		return res;
+	if (criptSvSocketInit(&recibidor, port, CANT_LISTEN)){
+		if (criptSvRecvMsj(&recibidor, cadena_recv, LONG_CHAR)){
+			criptSvDestroy(&recibidor);
+			res = 0;
+		}
 	}
-	res = criptSvRecvMsj(&recibidor, cadena_recv, LONG_CHAR);
-	if (res == -1){
-		return res;
-	}
-	criptSvDestroy(&recibidor);
 	liberarMemoriaInput();
-	return 0;
+	return res;
 }

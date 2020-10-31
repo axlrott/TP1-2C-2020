@@ -35,15 +35,12 @@ int main(int argc, char const *argv[]){
 	char* clave = (char*) argv[4]+6;
 
 	criptClCreate(&enviador, cripto, clave);
-	res = criptClSocketInit(&enviador, host, port);
-	if (res == -1){
-		return res;
+	if (criptClSocketInit(&enviador, host, port)){
+		if (criptClEnviarMsj(&enviador, input, LONG_CHAR)){
+			criptClDestroy(&enviador);
+			res = 0;
+		}
 	}
-	res = criptClEnviarMsj(&enviador, input, LONG_CHAR);
-	if (res == -1){
-		return res;
-	}
-	criptClDestroy(&enviador);
 	liberarMemoriaInput(input);
-	return 0;
+	return res;
 }

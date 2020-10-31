@@ -19,16 +19,16 @@ void criptClCreate(clCript_t* self, char* cripto, char* clave){
 	self->clave = clave;
 }
 
-int criptClSocketInit(clCript_t* self, char* host, char* port){
+bool criptClSocketInit(clCript_t* self, char* host, char* port){
 	if(socketClientCreate(&(self->cliente), host, port) == 0){
 		if(socketClientConnect(&(self->cliente)) == 0){
-			return 0;
+			return true;
 		}
 	}
-	return -1;
+	return false;
 }
 
-int criptClEnviarMsj(clCript_t* self, FILE* input, int cant){
+bool criptClEnviarMsj(clCript_t* self, FILE* input, int cant){
 	unsigned char cadena[cant];
 	cesar_t enc_cesar;
 	vigenere_t enc_vig;
@@ -42,7 +42,7 @@ int criptClEnviarMsj(clCript_t* self, FILE* input, int cant){
 	while(!feof(input)){
 		int largo = fread(cadena, sizeof(char), cant, input);
 		if (ferror(input)){
-			return -1;
+			return false;
 		}
 		if(strcmp(self->cripto, CESAR) == 0){
 			cesarEncriptar(&enc_cesar, cadena, cant);
@@ -52,14 +52,14 @@ int criptClEnviarMsj(clCript_t* self, FILE* input, int cant){
 			rc4Encriptar(&enc_rc4, cadena, cant);
 		}
 		if (socketClientSend(&(self->cliente), (char*) cadena, largo) == -1){
-			return -1;
+			return false;
 		}
 		memset(cadena, '\0', cant);
 	}
 	cesarDestroy(&enc_cesar);
 	vigenereDestroy(&enc_vig);
 	rc4Destroy(&enc_rc4);
-	return 0;
+	return true;
 }
 
 void criptClDestroy(clCript_t* self){

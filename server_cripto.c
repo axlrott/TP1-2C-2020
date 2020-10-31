@@ -19,18 +19,18 @@ void criptSvCreate(svCript_t* self, char* cripto, char* clave){
 	self->clave = clave;
 }
 
-int criptSvSocketInit(svCript_t* self, char* port, int cant_listen){
+bool criptSvSocketInit(svCript_t* self, char* port, int cant_listen){
 	if(socketServerCreate(&(self->servidor), port) == 0){
 		if(socketServerBindListen(&(self->servidor), cant_listen) == 0){
 				if(socketServerAccept(&(self->servidor)) == 0){
-					return 0;
+					return true;
 				}
 		}
 	}
-	return -1;
+	return false;
 }
 
-int criptSvRecvMsj(svCript_t* self, char* cadena, int largo){
+bool criptSvRecvMsj(svCript_t* self, char* cadena, int largo){
 	int largo_rec = 1;
 	cesar_t enc_cesar;
 	vigenere_t enc_vig;
@@ -59,7 +59,7 @@ int criptSvRecvMsj(svCript_t* self, char* cadena, int largo){
 	cesarDestroy(&enc_cesar);
 	vigenereDestroy(&enc_vig);
 	rc4Destroy(&enc_rc4);
-	return largo_rec;
+	return (largo_rec != -1);
 }
 
 void criptSvDestroy(svCript_t* self){
